@@ -1,0 +1,26 @@
+{
+  "name": "swashbot",
+  "version": "1.0.0",
+  "description": "new Discord Bot(Ocean Themed)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheChickenKnight/SwashBot.git"
+  },
+  "author": "TheChickenKnight",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheChickenKnight/SwashBot/issues"
+  },
+  "homepage": "https://github.com/TheChickenKnight/SwashBot#readme",
+  "dependencies": {
+    "@discordjs/voice": "^0.8.0",
+    "async-redis": "^2.0.0",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0"
+  }
+}
