@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import redis from 'async-redis';
 
-const client = new Client({
+export const client = new Client({
     ws: { 
         properties: { 
             $browser: 'Discord iOS'
@@ -19,31 +19,11 @@ const client = new Client({
     ]
 });
 
+import errorHandling from "./error.js";
+errorHandling();
+
 client.folders = fs.readdirSync('./commands/');
 var commandFiles = [];
-
-
-//-------------------------------------|| Error Handling ||-------------------------------\\
-/*
-process.on('uncaughtException', async (error, origin) => {
-    if (Date.now() - lastTime < 1000)
-        return;
-    console.log('----- Uncaught exception -----\n' + error + '\n----- Exception origin -----\n' + origin);
-    (await client.users.fetch(process.env.OWNER_ID)).send('**----- Uncaught exception -----**\n' + error + '\n----- Exception origin -----\n' + origin + '\n---------------\nCommand ' + ((Object.keys(lastCommand).includes('commandObj') && lastCommand.commandObj.info.name) ? lastCommand.commandObj.info.name : 'Unknown'));
-    if (lastCommand)
-        lastCommand = undefined;
-});
-process.on('unhandledRejection', async (reason, promise) => {
-    if (Date.now() - lastTime < 1000)
-        return;
-    console.log('----- Unhandled Rejection at -----\n' + promise + '\n----- Reason -----\n' + reason);
-    if (lastCommand)
-        lastCommand.message.reply(`It seems you have encountered an error while using this command! The developer has been notified!`);
-    (await client.users.fetch(process.env.OWNER_ID)).send('**----- Unhandled Rejection at -----**\n' + promise + '\n----- Reason -----\n' + reason + '\n---------------\nCommand ' + (lastCommand ? lastCommand.commandObj.info.name : 'Unknown'));
-    if (lastCommand)
-        lastCommand = undefined;
-});*/
-//------------------------------------------------------------------------------------------//
 
 client.redis = redis.createClient({
     url: 'redis://LGMIDtbhfWtHuYKEv2wrnNx5jV3OioVv@redis-18411.c283.us-east-1-4.ec2.cloud.redislabs.com:18411'
@@ -126,4 +106,4 @@ client.once('ready', async () => {
     });
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.DISCORD_TOKEN);

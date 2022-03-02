@@ -6,4 +6,6 @@ export const info = {
     usage: '<`prefix`>test'
 };
 
+import { client } from "index.js";
+
 export function run(client, message, args) {message.reply({content:'test'})};
