@@ -3,6 +3,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 import redis from 'async-redis';
+import { initFiles } from "./files.js";
 
 export const client = new Client({
     ws: { 
@@ -19,33 +20,25 @@ export const client = new Client({
     ]
 });
 
-import errorHandling from "./error.js";
-errorHandling();
+import { errorHandling } from "./error.js";
+//errorHandling();
 
-client.folders = fs.readdirSync('./commands/');
-var commandFiles = [];
+client.folders = fs.readdirSync('./commands/').filter(folder => !folder.includes('.'));
 
 client.redis = redis.createClient({
     url: 'redis://LGMIDtbhfWtHuYKEv2wrnNx5jV3OioVv@redis-18411.c283.us-east-1-4.ec2.cloud.redislabs.com:18411'
 });
 
-client.commands = new Collection(), client.aliases = new Collection(), client.cooldowns = new Collection();
+client.commands = new Collection(), client.aliases = new Collection(), client.cooldowns = new Collection(), client.timeIDs = new Collection();
 
 client.status;
 
 client.once('ready', async () => {
     client.status = 'on ' + client.guilds.cache.size + ' servers';
-    await client.folders.forEach(async folder => fs.readdirSync(`./commands/${folder}/`).filter(async file => file.endsWith('.js')).forEach(async file => {
-        const command = await import(`./commands/${folder}/${file}`);
-        client.commands.set(command.info.name, command);
-        if (command.info.aliases)
-            command.info.aliases.forEach(alias => client.aliases.set(alias, command.info.name));
-        console.log(file + ' Loaded!');
-        commandFiles.push(file);
-    }));
+    client.commandFiles = (await initFiles());
     client.user.setPresence({ activity: null });
     client.user.setPresence({ activities: [{name: client.status }], status: 'online'});
-    console.log(`Loaded all ${commandFiles.length} commands`);
+    console.log(`Loaded all ${client.commandFiles.length} commands`);
     client.on('messageCreate', async message => {
         if (!message.guild || message.author.bot)
             return;
@@ -63,7 +56,7 @@ client.once('ready', async () => {
         if (message.content.includes(process.env.BOT_ID))
             return message.reply(`My prefix is \`${prefix}\`!`);
         var commandName = message.content.replace(prefix, '').split(' ')[0];
-        if (commandFiles.includes(client.aliases.get(commandName) + '.js'))
+        if (client.commandFiles.includes(client.aliases.get(commandName) + '.js'))
             commandName = client.aliases.get(commandName);
         if (!message.content.startsWith(prefix))
             return;
@@ -94,15 +87,42 @@ client.once('ready', async () => {
     client.on('interactionCreate', async interaction => {
         if (interaction.customId.startsWith('disabled'))
             return;
+        let timeID;
         let props = await import(`./commands/${interaction.customId.split('_').pop()}/${interaction.customId.split('_').shift()}.js`);
         if (!interaction.customId.split('_')[2].split('<->').includes(interaction.user.id) && interaction.customId.split('_')[2] !== 'all')
             return interaction.reply({content: 'This isn\'t your toast!', ephemeral: true});
-        if (interaction.isSelectMenu())
+        if (interaction.isSelectMenu()) {
             props.menu(client, interaction);
-        else if (interaction.isButton())
+            timeID = setTimeout(() => {
+                try {
+                    interaction.update({
+                        components: [props.disabled]
+                    });
+                } catch {
+                    interaction.update({
+                        components: [props.disabled]
+                    });
+                }
+            }, props.info.menu);
+        }
+        else if (interaction.isButton()) {
             props.button(client, interaction);
+            timeID = setTimeout(() => {
+                try {
+                    interaction.update({
+                        components: [props.disabled]
+                    });
+                } catch {
+                    interaction.update({
+                        components: [props.disabled]
+                    });
+                }
+            }, props.info.button);
+        }
         else 
             console.log(interaction);
+        clearTimeout(client.timeIDs.get(props.info.name).get(interaction.customId.split('_')[2]));
+        client.timeIDs.get(props.info.name).delete(interaction.customId.split('_')[2]);
     });
 });
 
