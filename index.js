@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 import redis from 'async-redis';
 import { initFiles } from "./files.js";
+import { MyGuild } from "./classes/guild.js";
+import { welcome } from "./welcome.js";
 
 export const client = new Client({
     ws: { 
@@ -42,23 +44,25 @@ client.once('ready', async () => {
     client.on('messageCreate', async message => {
         if (!message.guild || message.author.bot)
             return;
-        if (!(await client.redis.HEXISTS(`guildSpec_${message.guild.id}`, 'prefix'))) {
-            await client.redis.HSET(`guildSpec_${message.guild.id}`, 'prefix', 's!');
+        let guild = await new MyGuild().fromID(message.guildId);
+        if (guild.new) {
+            welcome(client, message);
             client.status = 'on ' + client.guilds.cache.size + ' servers';
             client.user.setPresence({ activity: null });
             client.user.setPresence({ activities: [{name: client.status, type: 'PLAYING'}], status: 'online'});
+            guild.new = false;
         }
-        const prefix = await client.redis.HGET(`guildSpec_${message.guild.id}`, 'prefix');
         if (message.content.includes(process.env.BOT_ID) && message.content.toLowerCase().includes('reset')) {
-            await client.redis.HSET(`guildSpec_${message.guildId}`, 'prefix', 's!');
+            guild.prefix = 's!';
+            await guild.set();
             return message.reply('Got it! the prefix has been reset to `s!`!');
         }
         if (message.content.includes(process.env.BOT_ID))
-            return message.reply(`My prefix is \`${prefix}\`!`);
-        var commandName = message.content.replace(prefix, '').split(' ')[0];
+            return message.reply(`My prefix is \`${guild.prefix}\`!`);
+        var commandName = message.content.replace(guild.prefix, '').split(' ')[0];
         if (client.commandFiles.includes(client.aliases.get(commandName) + '.js'))
             commandName = client.aliases.get(commandName);
-        if (!message.content.startsWith(prefix))
+        if (!message.content.startsWith(guild.prefix))
             return;
         const commandObj = client.commands.get(commandName);
         if (!commandObj)
@@ -70,7 +74,7 @@ client.once('ready', async () => {
             if (cooldowns.has(message.author.id)) {
                 const time = Date.now() - cooldowns.get(message.author.id);
                 if (time / 1000 < commandObj.info.cooldown)
-                    return message.reply(`Woah, slow down! You can use \`${prefix}${commandName}\` in **${(commandObj.info.cooldown - (time / 1000)).toString().replace(/(?<=\.[0-9])[0-9]+/, '')}** second(s)!`);
+                    return message.reply(`Woah, slow down! You can use \`${guild.prefix}${commandName}\` in **${(commandObj.info.cooldown - (time / 1000)).toString().replace(/(?<=\.[0-9])[0-9]+/, '')}** second(s)!`);
             }
         }
         if (commandObj.info.section == 'admin' && message.author.id != process.env.OWNER_ID)
@@ -80,45 +84,22 @@ client.once('ready', async () => {
         message.channel.sendTyping();
         if (commandObj.info.section != 'admin')
             console.log(message.content + ' | on server ' + message.guild.name);
-        commandObj.run(client, message, message.content.replace(prefix, '').replace(/^(.+?( |$))/, '').split(' ').filter(item => item.length > 0));
+        guild.commands++;
+        await guild.set();
+        commandObj.run(client, message, message.content.replace(guild.prefix, '').replace(/^(.+?( |$))/, '').split(' ').filter(item => item.length > 0));
     });
 
 
     client.on('interactionCreate', async interaction => {
         if (interaction.customId.startsWith('disabled'))
             return;
-        let timeID;
         let props = await import(`./commands/${interaction.customId.split('_').pop()}/${interaction.customId.split('_').shift()}.js`);
         if (!interaction.customId.split('_')[2].split('<->').includes(interaction.user.id) && interaction.customId.split('_')[2] !== 'all')
             return interaction.reply({content: 'This isn\'t your toast!', ephemeral: true});
-        if (interaction.isSelectMenu()) {
+        if (interaction.isSelectMenu())
             props.menu(client, interaction);
-            timeID = setTimeout(() => {
-                try {
-                    interaction.update({
-                        components: [props.disabled]
-                    });
-                } catch {
-                    interaction.update({
-                        components: [props.disabled]
-                    });
-                }
-            }, props.info.menu);
-        }
-        else if (interaction.isButton()) {
+        else if (interaction.isButton())
             props.button(client, interaction);
-            timeID = setTimeout(() => {
-                try {
-                    interaction.update({
-                        components: [props.disabled]
-                    });
-                } catch {
-                    interaction.update({
-                        components: [props.disabled]
-                    });
-                }
-            }, props.info.button);
-        }
         else 
             console.log(interaction);
         clearTimeout(client.timeIDs.get(props.info.name).get(interaction.customId.split('_')[2]));
