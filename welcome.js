@@ -8,7 +8,7 @@ export async function welcome(client, message) {
             new MessageEmbed()
                 .setColor(themedColor())
                 .setImage('attachment://welcome.png')
-                .setDescription('Thanks for adding SwashBot to your server! that makes it ' + client.guilds.cache.size() + ' servers!\nYou won\'t be dissappointed! ')
+                .setDescription('Thanks for adding SwashBot to your server!\nYou won\'t be dissappointed! ')
         ],
         files: [welcome]
     })

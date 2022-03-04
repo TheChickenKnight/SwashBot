@@ -86,6 +86,7 @@ client.once('ready', async () => {
             console.log(message.content + ' | on server ' + message.guild.name);
         guild.commands++;
         await guild.set();
+        
         commandObj.run(client, message, message.content.replace(guild.prefix, '').replace(/^(.+?( |$))/, '').split(' ').filter(item => item.length > 0));
     });
 
