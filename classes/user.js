@@ -14,24 +14,22 @@ export class User {
             this, 
             Object.assign(
                 user, 
-                (await client.redis.HGET('users', id)) ||
+                JSON.parse(await client.redis.HGET('users', id)) ||
                 {
                     commands: 0,
                     xp: 0,
-                    balance: 0,
-                    locker: 0,
-                    locker: undefined,
-                    inventory: [],
-                    hunger: 100,
-                    stamina: 100,
-                    pet: undefined,
                     admin: id == process.env.OWNER_ID,
-                    status_effects: [],
-                    boats: [],
-                    fishing_rods: []   
+                    started: false, 
+                    settings: {
+                        general: {
+                            tips: true,
+                            ping_on_reply: true
+                        }
+                    }
                 }
             )
         );
+        return this;
     }
 
     async set() {

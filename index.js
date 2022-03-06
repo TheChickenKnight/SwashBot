@@ -1,4 +1,4 @@
-import { Client, Collection, Intents } from "discord.js";
+import { Client, Collection, Intents, MessageEmbed } from "discord.js";
 import fs from 'fs'; 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -6,6 +6,8 @@ import redis from 'async-redis';
 import { initFiles } from "./files.js";
 import { MyGuild } from "./classes/guild.js";
 import { welcome } from "./welcome.js";
+import { tips } from "./functions.js";
+import { User } from "./classes/user.js";
 
 export const client = new Client({
     ws: { 
@@ -45,6 +47,7 @@ client.once('ready', async () => {
         if (!message.guild || message.author.bot)
             return;
         let guild = await new MyGuild().fromID(message.guildId);
+        let user = await new User().fromID(message.author.id);
         if (guild.new) {
             welcome(client, message);
             client.status = 'on ' + client.guilds.cache.size + ' servers';
@@ -82,11 +85,34 @@ client.once('ready', async () => {
         if (message.author.id !== process.env.OWNER_ID)
             client.cooldowns.get(commandName).set(message.author.id, Date.now());
         message.channel.sendTyping();
+        message.guild.own
         if (commandObj.info.section != 'admin')
             console.log(message.content + ' | on server ' + message.guild.name);
         guild.commands++;
+        user.commands++;
         await guild.set();
-        
+        message.error = async function(text) {
+            await this.channel.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setColor('RED')
+                        .setDescription(':x: ' + text)
+                ]
+            });
+        };
+        message.realReply = message.reply;
+        message.reply = async function(obj) {
+            if (!user.settings.general.ping_on_reply)
+                obj.allowedMentions = {
+                    repliedUser: false
+                };
+            if (user.settings.general.tips && !Math.floor(Math.random()*7))
+                if (Object.keys(obj).includes('content'))
+                    obj.content += '\n**TIP:** ' + tips[Math.floor(Math.random()*tips.length)];
+                else 
+                    obj.content = '\n**TIP:** ' + tips[Math.floor(Math.random()*tips.length)];
+            await this.realReply(obj);
+        }
         commandObj.run(client, message, message.content.replace(guild.prefix, '').replace(/^(.+?( |$))/, '').split(' ').filter(item => item.length > 0));
     });
 

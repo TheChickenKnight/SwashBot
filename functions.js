@@ -36,3 +36,9 @@ export function addTimeout(actionrow, time, command, author, sender, interaction
 export function caps(text) {
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
+
+export const tips = [
+    "do (prefix)start to start your pirating adventure (you get more xp in general from starting)!",
+    "use the settings command to turn off these pesky tips!",
+    "you can stop me from pinging you with every command in settings!"
+];
