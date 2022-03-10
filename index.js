@@ -39,6 +39,7 @@ client.once('ready', async () => {
     client.status = 'Living on ' + new Island().name + ' Island!';
     client.commandFiles = await initFiles();
     setInterval(() => {
+        client.status = 'Living on ' + new Island().name + ' Island!';
         client.user.setPresence({ activity: null });
         client.user.setPresence({ activities: [{name: client.status }], status: 'online'});
     }, 3000);
