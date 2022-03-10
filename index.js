@@ -38,8 +38,10 @@ client.status;
 client.once('ready', async () => {
     client.status = 'Living on ' + new Island().name + ' Island!';
     client.commandFiles = await initFiles();
-    client.user.setPresence({ activity: null });
-    client.user.setPresence({ activities: [{name: client.status }], status: 'online'});
+    setInterval(() => {
+        client.user.setPresence({ activity: null });
+        client.user.setPresence({ activities: [{name: client.status }], status: 'online'});
+    }, 3000);
     console.log(`Loaded all ${client.commandFiles.length} commands`);
     client.on('messageCreate', async message => {
         if (!message.guild || message.author.bot)
