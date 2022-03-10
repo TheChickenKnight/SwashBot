@@ -128,9 +128,9 @@ export class Island {
         this.name = 
             prefix[0][Math.floor(Math.random()*prefix[0].length)] + 
             prefix[1][Math.floor(Math.random()*prefix[1].length)] + 
-            (!Math.floor(Math.random()*5)) ?
-                prefix[1][Math.floor(Math.random()*prefix[1].length)] :
-                '' +
+            ((!Math.floor(Math.random()*5)) ?
+                (prefix[1][Math.floor(Math.random()*prefix[1].length)]) :
+                ('')) +
             prefix[2][Math.floor(Math.random()*prefix[2].length)];
         this.seed = '';
     }
