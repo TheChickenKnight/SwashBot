@@ -1,7 +1,7 @@
 import { client } from "./index.js";
 import fs from 'fs';
 
-export async function initFiles() {
+export default async function initFiles() {
     let commandFiles = [];
     for (let folder of client.folders) {
         let files = fs.readdirSync(`./commands/${folder}/`).filter(file => file.endsWith('.js'));

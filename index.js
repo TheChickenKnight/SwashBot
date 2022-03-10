@@ -3,11 +3,12 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 import redis from 'async-redis';
-import { initFiles } from "./files.js";
+import initFiles from "./files.js";
 import { MyGuild } from "./classes/guild.js";
-import { welcome } from "./welcome.js";
+import welcome from "./welcome.js";
 import { tips } from "./functions.js";
 import { User } from "./classes/user.js";
+import { Island } from "./classes/island.js";
 
 export const client = new Client({
     ws: { 
@@ -18,9 +19,6 @@ export const client = new Client({
     intents: [ 
         Intents.FLAGS.GUILDS, 
         Intents.FLAGS.GUILD_MESSAGES, 
-        Intents.FLAGS.GUILD_VOICE_STATES, 
-        Intents.FLAGS.DIRECT_MESSAGES, 
-        Intents.FLAGS.GUILD_WEBHOOKS 
     ]
 });
 
@@ -38,8 +36,8 @@ client.commands = new Collection(), client.aliases = new Collection(), client.co
 client.status;
 
 client.once('ready', async () => {
-    client.status = 'on ' + client.guilds.cache.size + ' servers';
-    client.commandFiles = (await initFiles());
+    client.status = 'Living on ' + new Island().name + ' Island!';
+    client.commandFiles = await initFiles();
     client.user.setPresence({ activity: null });
     client.user.setPresence({ activities: [{name: client.status }], status: 'online'});
     console.log(`Loaded all ${client.commandFiles.length} commands`);

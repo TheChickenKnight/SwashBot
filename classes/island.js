@@ -33,7 +33,13 @@ const prefix = [
         'Sinn',
         'Mist',
         'Ger',
-        'Nom'
+        'Nom',
+        'Sus',
+        'Yaw',
+        'Zim',
+        'G\'',
+        'Gid',
+        'Kir'
     ],
     [
         'nom',
@@ -42,6 +48,7 @@ const prefix = [
         'dee',
         'mello',
         'diddl',
+        'er',
         'spin',
         'gel',
         'edge',
@@ -49,7 +56,32 @@ const prefix = [
         '',
         'oo',
         'idli',
-        'est'
+        'est',
+        'keel',
+        'sus',
+        'viv',
+        'dri',
+        'yer',
+        'dein',
+        'eam',
+        'stei',
+        'styr',
+        'rox',
+        'ox',
+        'xor',
+        'za',
+        'zizz',
+        'din',
+        '-',
+        'dom',
+        'vern',
+        'luim',
+        'ruin',
+        'sew',
+        'en',
+        'fef',
+        'y',
+        'uit'
     ],
     [
         'nom',
@@ -71,13 +103,36 @@ const prefix = [
         'room',
         'ford',
         'more',
-        'estle'
+        'estle',
+        'sus',
+        'deuce',
+        'eek',
+        'some',
+        'cell',
+        'elle',
+        'hah',
+        'umb',
+        'ok',
+        'ine',
+        'rer',
+        'y',
+        'oink',
+        'oin',
+        'ode',
+        'ied'
     ]
 ];
 
 export class Island {
     constructor() {
-        this.name = prefix[0][Math.floor(Math.random()*prefix[0].length)] + prefix[1][Math.floor(Math.random()*prefix[1].length)] + prefix[2][Math.floor(Math.random()*prefix[2].length)];
+        this.name = 
+            prefix[0][Math.floor(Math.random()*prefix[0].length)] + 
+            prefix[1][Math.floor(Math.random()*prefix[1].length)] + 
+            (!Math.floor(Math.random()*5)) ?
+                prefix[1][Math.floor(Math.random()*prefix[1].length)] :
+                '' +
+            prefix[2][Math.floor(Math.random()*prefix[2].length)];
+        this.seed = '';
     }
 
     setRand(level, id) {
